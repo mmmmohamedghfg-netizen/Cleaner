@@ -1,0 +1,46 @@
+
+name: Build Smart Cleaner AI APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build.yml'
+      - 'SmartCleanerAI_Project.zip'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Extract project ZIP
+        run: |
+          unzip -o SmartCleanerAI_Project.zip -d extracted
+          find extracted -name gradlew -type f
+
+      - name: Build APK
+        run: |
+          cd extracted/SmartCleanerAI
+          gradle --version
+          gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartCleanerAI-APK
+          path: extracted/SmartCleanerAI/app/build/outputs/apk/debug/*.apk
+          
